@@ -1,1 +1,1 @@
-# damocles-lumber
+#[ModKit Wiki](../../wiki)
