@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 public class DamoclesLumberScript : MonoBehaviour {
@@ -141,6 +142,7 @@ public class DamoclesLumberScript : MonoBehaviour {
                 bpush.localPosition = new Vector3(0, 1.2f, 0);
                 led.material = ledmat[0];
                 module.HandlePass();
+                moduleSolved = true;
             }
             return false;
         };
@@ -218,7 +220,10 @@ public class DamoclesLumberScript : MonoBehaviour {
             if(solv.Count() > modCount)
             {
                 modCount++;
-                lastSolve = solv.Except(modSolveOrder).Last();
+                List<string> solv2 = new List<string>(solv);
+                for (int i = 0; i < modSolveOrder.Count; i++)
+                    solv2.Remove(modSolveOrder[i]);
+                lastSolve = solv2.Last();
                 Debug.LogFormat("[Damocles Lumber #{0}] {1} solved.", moduleID, lastSolve);
                 modSolveOrder.Add(lastSolve);
                 if (disarmed[0])
@@ -301,6 +306,8 @@ public class DamoclesLumberScript : MonoBehaviour {
         int j = 0;
         while(!moduleSolved || disarmed[1])
         {
+            if (j >= disptext.Length)
+                j %= disptext.Length;
             disp.text = disptext[j].ToString();
             j++;
             j %= disptext.Length;
@@ -308,5 +315,59 @@ public class DamoclesLumberScript : MonoBehaviour {
             disp.text = "";
             yield return new WaitForSeconds(0.05f + (j == 0 ? cyclespeed : 0));
         }
+    }
+
+    //twitch plays
+    bool TwitchShouldCancelCommand;
+    #pragma warning disable 414
+    private readonly string TwitchHelpMessage = @"!{0} press [Presses the button] | !{0} speed <#> [Sets the cycle speed]";
+    #pragma warning restore 414
+    IEnumerator ProcessTwitchCommand(string command)
+    {
+        if (Regex.IsMatch(command, @"^\s*press\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+        {
+            yield return null;
+            button.OnInteract();
+            yield break;
+        }
+        string[] parameters = command.Split(' ');
+        if (Regex.IsMatch(parameters[0], @"^\s*speed\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+        {
+            if (parameters.Length == 1)
+                yield return "sendtochaterror Please specify a cycle speed!";
+            else if (parameters.Length > 2)
+                yield return "sendtochaterror Too many parameters!";
+            else
+            {
+                float delay;
+                if (!float.TryParse(parameters[1], out delay))
+                {
+                    yield return "sendtochaterror The specified speed '" + parameters[1] + "' is invalid!";
+                    yield break;
+                }
+                yield return null;
+                screen.OnInteract();
+                float t = 0f;
+                while (t < delay)
+                {
+                    t += Time.deltaTime;
+                    yield return null;
+                    if (TwitchShouldCancelCommand)
+                        break;
+                }
+                screen.OnInteract();
+                if (TwitchShouldCancelCommand)
+                    yield return "cancelled";
+            }
+        }
+    }
+
+    void TwitchHandleForcedSolve()
+    {
+        bpush.localPosition = new Vector3(0, 1.2f, 0);
+        disp.text = "";
+        led.material = ledmat[0];
+        module.HandlePass();
+        moduleSolved = true;
     }
 }
