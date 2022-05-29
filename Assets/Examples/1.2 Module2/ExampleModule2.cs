@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 public class ExampleModule2 : MonoBehaviour
 {
     public KMSelectable[] buttons;
+    public TextMesh modText;
     KMAudio.KMAudioRef audioRef;
     int correctIndex;
 
@@ -31,34 +32,36 @@ public class ExampleModule2 : MonoBehaviour
             TextMesh buttonText = buttons[i].GetComponentInChildren<TextMesh>();
             buttonText.text = label;
             int j = i;
-            buttons[i].OnInteract += delegate () { Debug.Log("Press #" + j); OnPress(j == correctIndex); return false; };
+            buttons[i].OnInteract += delegate () { /*Debug.Log("Press #" + j);*/ OnPress(j == correctIndex); return false; };
             buttons[i].OnInteractEnded += OnRelease;
         }
+
+        modText.text = GetComponent<KMBombModule>().ModuleDisplayName;
     }
 
     private void OnDeselect()
     {
-        Debug.Log("ExampleModule2 OnDeselect.");
+        //Debug.Log("ExampleModule2 OnDeselect.");
     }
 
     private void OnLeft()
     {
-        Debug.Log("ExampleModule2 OnLeft.");
+        //Debug.Log("ExampleModule2 OnLeft.");
     }
 
     private void OnRight()
     {
-        Debug.Log("ExampleModule2 OnRight.");
+        //Debug.Log("ExampleModule2 OnRight.");
     }
 
     private void OnSelect()
     {
-        Debug.Log("ExampleModule2 OnSelect.");
+        //Debug.Log("ExampleModule2 OnSelect.");
     }
 
     private void OnHighlight()
     {
-        Debug.Log("ExampleModule2 OnHighlight.");
+        //Debug.Log("ExampleModule2 OnHighlight.");
     }
 
     void OnActivate()
@@ -69,7 +72,7 @@ public class ExampleModule2 : MonoBehaviour
 
             if (queryResponse.Count > 0)
             {
-                Debug.Log(queryResponse[0]);
+                //Debug.Log(queryResponse[0]);
             }
         }
 
@@ -81,12 +84,12 @@ public class ExampleModule2 : MonoBehaviour
             batteryCount += responseDict["numbatteries"];
         }
 
-        Debug.Log("Battery count: " + batteryCount);
+        //Debug.Log("Battery count: " + batteryCount);
     }
 
     bool OnCancel()
     {
-        Debug.Log("ExampleModule2 cancel.");
+        //Debug.Log("ExampleModule2 cancel.");
 
         return true;
     }
@@ -94,7 +97,7 @@ public class ExampleModule2 : MonoBehaviour
     //On pressing button a looped sound will play
     void OnPress(bool correctButton)
     {
-        Debug.Log("Pressed " + correctButton + " button");
+        //Debug.Log("Pressed " + correctButton + " button");
 
         if (correctButton)
         {
@@ -103,14 +106,14 @@ public class ExampleModule2 : MonoBehaviour
         }
         else
         {
-            audioRef = GetComponent<KMAudio>().PlaySoundAtTransformWithRef("doublebeep125", transform);
+            //audioRef = GetComponent<KMAudio>().PlaySoundAtTransformWithRef("doublebeep125", transform);
         }
     }
 
     //On releasing a button a looped sound will stop
     void OnRelease()
     {
-        Debug.Log("OnInteractEnded Released");
+        //Debug.Log("OnInteractEnded Released");
         if(audioRef != null && audioRef.StopSound != null)
         {
             audioRef.StopSound();
