@@ -364,8 +364,9 @@ public class DamoclesLumberScript : MonoBehaviour {
 
     void TwitchHandleForcedSolve()
     {
-        bpush.localPosition = new Vector3(0, 1.2f, 0);
+        StopAllCoroutines();
         disp.text = "";
+        bpush.localPosition = new Vector3(0, 1.2f, 0);
         led.material = ledmat[0];
         module.HandlePass();
         moduleSolved = true;
