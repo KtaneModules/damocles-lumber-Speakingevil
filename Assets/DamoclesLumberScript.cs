@@ -342,7 +342,7 @@ public class DamoclesLumberScript : MonoBehaviour {
                 float delay;
                 if (!float.TryParse(parameters[1], out delay))
                 {
-                    yield return "sendtochaterror The specified speed '" + parameters[1] + "' is invalid!";
+                    yield return "sendtochaterror!f The specified speed '" + parameters[1] + "' is invalid!";
                     yield break;
                 }
                 yield return null;
