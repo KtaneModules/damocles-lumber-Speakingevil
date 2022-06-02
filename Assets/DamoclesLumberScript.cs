@@ -1,11 +1,11 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEngine;
 
-public class DamoclesLumberScript : MonoBehaviour {
-
+public class DamoclesLumberScript : MonoBehaviour
+{
     public KMAudio Audio;
     public KMBombModule module;
     public KMBombInfo info;
@@ -19,18 +19,17 @@ public class DamoclesLumberScript : MonoBehaviour {
 
     private string[] exempt;
     private string disptext;
-    private List<string> modSolveOrder = new List<string> {};
+    private List<string> modSolveOrder = new List<string> { };
     private bool org;
     private bool[] disarmed = new bool[3];
-    private bool setspeed; 
+    private bool setspeed;
     private float cyclespeed = 0.5f;
     private IEnumerator dispcycle;
 
     private int modCount;
-    private static string[] modOrder;
+    private static List<string> modOrder;
     private string[] chosen = new string[2];
 
-    private static int minModuleID;
     private static int moduleIDCounter;
     private int moduleID;
     private bool moduleSolved;
@@ -159,10 +158,10 @@ public class DamoclesLumberScript : MonoBehaviour {
 
     private IEnumerator StartUp()
     {
-        if(moduleID == moduleIDCounter)
-            modOrder = info.GetSolvableModuleNames().Where(x => !exempt.Contains(x)).Distinct().ToArray().Shuffle().ToArray();
+        if (moduleID == moduleIDCounter)
+            modOrder = info.GetSolvableModuleNames().Where(x => !exempt.Contains(x)).Distinct().ToArray().Shuffle().ToList();
         yield return new WaitForSeconds(0.1f);
-        org = info.GetSolvableModuleNames().Any(x => x == "Organization") || moduleID - minModuleID >= modOrder.Count() - 1;
+        org = info.GetSolvableModuleNames().Any(x => x == "Organization") || moduleIDCounter - moduleID >= modOrder.Count() - 1;
         if (org)
             led.material = ledmat[1];
         button.OnInteract = delegate ()
@@ -192,7 +191,7 @@ public class DamoclesLumberScript : MonoBehaviour {
                     else
                     {
                         Debug.LogFormat("[Damocles Lumber #{0}] Button pressed. Final strike armed.", moduleID);
-                        module.HandlePass();                       
+                        module.HandlePass();
                         disarmed[1] = true;
                         moduleSolved = true;
                     }
@@ -208,7 +207,6 @@ public class DamoclesLumberScript : MonoBehaviour {
             return false;
         };
         yield return new WaitForSeconds(0.1f);
-        minModuleID = moduleIDCounter;
         AnsGen(org);
         dispcycle = DispCycle();
         StartCoroutine(dispcycle);
@@ -217,13 +215,15 @@ public class DamoclesLumberScript : MonoBehaviour {
         {
             yield return new WaitForSeconds(0.33f);
             List<string> solv = info.GetSolvedModuleNames().Where(x => !exempt.Contains(x)).ToList();
-            if(solv.Count() > modCount)
+            if (solv.Count() > modCount)
             {
                 modCount++;
                 List<string> solv2 = new List<string>(solv);
                 for (int i = 0; i < modSolveOrder.Count; i++)
                     solv2.Remove(modSolveOrder[i]);
                 lastSolve = solv2.Last();
+                if (moduleID == moduleIDCounter)
+                    modOrder.Remove(lastSolve);
                 Debug.LogFormat("[Damocles Lumber #{0}] {1} solved.", moduleID, lastSolve);
                 modSolveOrder.Add(lastSolve);
                 if (disarmed[0])
@@ -237,7 +237,7 @@ public class DamoclesLumberScript : MonoBehaviour {
                     {
                         if (!org)
                         {
-                            org = moduleID - minModuleID + modCount >= modOrder.Count() - 1;
+                            org = moduleIDCounter - moduleID >= modOrder.Count() - 1;
                             if (org)
                             {
                                 Debug.LogFormat("[Damocles Lumber #{0}] No distinct modules remain. Changing modes.", moduleID);
@@ -278,7 +278,7 @@ public class DamoclesLumberScript : MonoBehaviour {
         }
         else
         {
-            int r = Random.Range(moduleID - minModuleID + modCount, modOrder.Count() - 1);
+            int r = Random.Range(moduleIDCounter - moduleID, modOrder.Count() - 1);
             chosen[0] = modOrder[r];
             chosen[1] = modOrder[r + 1];
         }
@@ -304,7 +304,7 @@ public class DamoclesLumberScript : MonoBehaviour {
     private IEnumerator DispCycle()
     {
         int j = 0;
-        while(!moduleSolved || disarmed[1])
+        while (!moduleSolved || disarmed[1])
         {
             if (j >= disptext.Length)
                 j %= disptext.Length;
@@ -319,9 +319,9 @@ public class DamoclesLumberScript : MonoBehaviour {
 
     //twitch plays
     bool TwitchShouldCancelCommand;
-    #pragma warning disable 414
+#pragma warning disable 414
     private readonly string TwitchHelpMessage = @"!{0} press [Presses the button] | !{0} speed <#> [Sets the cycle speed]";
-    #pragma warning restore 414
+#pragma warning restore 414
     IEnumerator ProcessTwitchCommand(string command)
     {
         if (Regex.IsMatch(command, @"^\s*press\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
